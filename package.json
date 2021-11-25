@@ -5,7 +5,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "rm -rf dist && webpack serve",
+    "start": "rm -rf dist && webpack watch",
     "build": "webpack --node-env=production"
   },
   "dependencies": {
