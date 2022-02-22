@@ -11,7 +11,7 @@ export const App = ({ router: Router }) => {
     return (
         <Router>
             <span css={style}>Test</span>
-            <Fixed top={20} left={20}>Left</Fixed>
+            <Fixed top={40} left={50}>Left</Fixed>
             <Fixed top={20} right={20}>Right</Fixed>
         </Router>
     );

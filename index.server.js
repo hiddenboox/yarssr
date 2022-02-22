@@ -12,7 +12,9 @@ const assets = Object.values(manifest).filter(url => !url.includes('hot')).filte
 
 const app = express();
 
-app.get( /\.(js|css|map|ico)$/, express.static('./dist/client'));
+if (process.env.NODE_ENV === 'production') {
+    app.get(/\.(js|css|map|ico)$/, express.static('dist/client'));
+}
 
 app.get('*', (req, res) => {
     const app = (

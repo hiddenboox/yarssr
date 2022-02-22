@@ -13,8 +13,11 @@ import { WebpackDiskPlugin } from './WebpackDiskPlugin.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+console.log(process.env.NODE_ENV)
 const baseConfig = {
-    mode: 'development',
+    mode: isDevelopment ? "development" : "production",
     devtool: "cheap-module-source-map",
     module: {
         rules: [
@@ -41,7 +44,7 @@ const baseConfig = {
               },
               {
                 loader: 'css-loader',
-                options: { sourceMap: process.env.NODE_ENV !== 'production' },
+                options: { sourceMap: isDevelopment},
               },
             ],
           },
@@ -53,6 +56,7 @@ const seed = {};
 
 const vendorConfig = {
     name: 'vendor',
+    mode: isDevelopment ? "development" : "production",
     mode: 'development',
     entry: {
         vendor: ['react', 'react-dom', 'react/jsx-runtime']
@@ -60,7 +64,7 @@ const vendorConfig = {
     output: {
         filename: 'vendor.dll.js',
         path: path.join(__dirname, 'dist'),
-        publicPath: 'http://localhost:3001/',
+        publicPath: isDevelopment ? 'http://localhost:3001/' : '/',
         library: 'vendor_lib'
     },
     plugins: [
@@ -80,7 +84,7 @@ const clientConfig = {
     output: {
         path: path.resolve(__dirname, 'dist', 'client'),
         filename: '[name].bundle.js',
-        publicPath: 'http://localhost:3001/',
+        publicPath: isDevelopment ? 'http://localhost:3001/' : '/',
     },
     ...baseConfig,
     dependencies: ["vendor"],
@@ -106,8 +110,8 @@ const clientConfig = {
         splitChunks: false,
       },
     plugins: [
-      process.env.NODE_ENV !== 'production' &&new WebpackDevServerPlugin(),
-      process.env.NODE_ENV !== 'production' && new ReactRefreshWebpackPlugin(),
+      isDevelopment && new WebpackDevServerPlugin(),
+      isDevelopment && new ReactRefreshWebpackPlugin(),
       new WebpackManifestPlugin({ seed }),
       new webpack.DllReferencePlugin({
           context: __dirname,
@@ -119,7 +123,7 @@ const clientConfig = {
       }),
       new AddAssetHtmlPlugin({ filepath: path.resolve(__dirname, './dist/*.dll.js') }),
       new MiniCssExtractPlugin({ filename: 'styles.css' }),
-      process.env.NODE_ENV !== 'production' &&new WebpackDiskPlugin({
+      isDevelopment && new WebpackDiskPlugin({
         output: {
           path: "dist/client"
         },
@@ -129,7 +133,7 @@ const clientConfig = {
           { asset: "vendor.dll.js" },
         ]
       }),
-    ]
+    ].filter(Boolean)
 }
 
 const serverConfig = {
@@ -168,6 +172,9 @@ const serverConfig = {
         ]
     },
     plugins: [
+        new webpack.DefinePlugin({
+            'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+        }),
         new NodemonPlugin({ ignore: ['*.css'], watch: [path.resolve('./dist/server/server.bundle.cjs')] }),
         new MiniCssExtractPlugin({ filename: 'styles.css' }),
     ]
